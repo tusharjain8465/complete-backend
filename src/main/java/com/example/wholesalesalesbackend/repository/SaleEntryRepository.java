@@ -29,19 +29,20 @@ public interface SaleEntryRepository extends JpaRepository<SaleEntry, Long> {
 
        List<SaleEntry> findByClientAndSaleDateTimeBeforeOrderBySaleDateTimeDesc(Client client, LocalDateTime to);
 
+       
        // present
        List<SaleEntry> findBySaleDateTimeBetweenOrderBySaleDateTimeDesc(LocalDateTime from, LocalDateTime to);
 
        @Query(value = "SELECT t.* FROM public.sale_entry t WHERE DATE(t.sale_date_time) BETWEEN :fromDate AND :toDate "
                      + //
-                     "    ORDER BY t.sale_date_time DESC", nativeQuery = true)
+                     "    ORDER BY t.sale_date_time ", nativeQuery = true)
        List<SaleEntry> findBySaleDateBetweenOrderBySaleDateTimeDescCustom(
                      @Param("fromDate") LocalDate fromDate,
                      @Param("toDate") LocalDate toDate);
 
        @Query(value = "SELECT t.* FROM public.sale_entry t WHERE t.client_id =:clientId AND DATE(t.sale_date_time) BETWEEN :fromDate AND :toDate "
                      + //
-                     "    ORDER BY t.sale_date_time DESC", nativeQuery = true)
+                     "    ORDER BY t.sale_date_time ", nativeQuery = true)
        List<SaleEntry> findByClientIdAndSaleDateBetweenOrderBySaleDateTimeDescCustom(
                      @Param("clientId") Long clientId,
                      @Param("fromDate") LocalDate fromDate,
