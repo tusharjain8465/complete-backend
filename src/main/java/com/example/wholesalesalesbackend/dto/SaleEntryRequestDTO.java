@@ -20,7 +20,9 @@ public class SaleEntryRequestDTO {
     private Integer quantity;
     private Double totalPrice;
     private Double profit;
+
     private LocalDateTime saleDateTime;
+
     private Boolean returnFlag;
     private Long clientId;
     private String note;

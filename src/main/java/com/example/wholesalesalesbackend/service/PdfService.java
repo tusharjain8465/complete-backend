@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
@@ -27,7 +28,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 @Service
 public class PdfService {
 
-    
     public ByteArrayInputStream generateSalesPdf(
             String clientName,
             List<SaleEntry> sales,
@@ -40,10 +40,11 @@ public class PdfService {
 
         if (oldBalance == null) {
             oldBalance = 0.0;
-        }
-        if (depositAmount == null) {
-            depositAmount = 0.0;
-        }
+        }   
+        // Ensure India timezone
+        ZoneId indiaZone = ZoneId.of("Asia/Kolkata");
+        LocalDate indiaToday = LocalDate.now(indiaZone);
+        LocalDateTime indiaNow = LocalDateTime.now(indiaZone);
 
         Document document = new Document();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -52,12 +53,12 @@ public class PdfService {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Fonts and Styles
+            // Fonts
             Font fontHeader = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
             Font fontBold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
             Font fontNormal = FontFactory.getFont(FontFactory.HELVETICA, 12);
-
             Font redFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.RED);
+            Font greenFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.GREEN);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
@@ -69,18 +70,37 @@ public class PdfService {
 
             // Report Info
             document.add(new Paragraph("Sales Report for → " + clientName, fontBold));
-            document.add(new Paragraph("Pdf Generated date → " + LocalDateTime.now().toLocalDate().format(formatter)));
+            document.add(new Paragraph("Pdf Generated date → " + indiaToday.format(formatter)));
+            Font blueFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLUE);
+
 
             if (from != null && to != null) {
                 String formattedFrom = from.format(formatter);
                 String formattedTo = to.format(formatter);
-                document.add(new Paragraph("Date from: " + formattedFrom + "  to: " + formattedTo, fontNormal));
+                document.add(new Paragraph("Date from: " + formattedFrom + "  se  " + formattedTo + " tak ki report", blueFont));
             }
             document.add(Chunk.NEWLINE);
 
-            // === Removed old balance, deposit and loan lines here ===
+            // ===== Old Balance Row =====
+            PdfPTable balanceTable = new PdfPTable(1);
+            balanceTable.setWidthPercentage(50);
+            balanceTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
-            // Sales Table
+            if (from != null) {
+                LocalDate modifiedFromDateBeforeOneDay = from.minusDays(1);
+                String dateInString = "(" + modifiedFromDateBeforeOneDay.format(formatter) + ")";
+                PdfPCell oldBalanceCell = new PdfPCell(
+                        new Phrase(dateInString + " Tak Ka Pending Amount = ₹" + oldBalance, redFont));
+                oldBalanceCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                oldBalanceCell.setBorder(Rectangle.NO_BORDER);
+                oldBalanceCell.setNoWrap(true);
+                balanceTable.addCell(oldBalanceCell);
+            }
+
+            document.add(balanceTable);
+            document.add(Chunk.NEWLINE);
+
+            // ===== Sales Table =====
             int columnCount = isAllClient ? 5 : 4;
             PdfPTable table = new PdfPTable(columnCount);
             table.setWidthPercentage(100);
@@ -110,7 +130,9 @@ public class PdfService {
 
                 PdfPCell srCell = new PdfPCell(new Phrase(String.valueOf(sr++), fontNormal));
                 PdfPCell dateCell = new PdfPCell(
-                        new Phrase(sale.getSaleDateTime().toLocalDate().format(formatter), fontNormal));
+                        new Phrase(sale.getSaleDateTime().atZone(ZoneId.systemDefault())
+                                .withZoneSameInstant(indiaZone)
+                                .toLocalDate().format(formatter), fontNormal));
                 PdfPCell accessoryCell = new PdfPCell(new Phrase(sale.getAccessoryName(), fontNormal));
                 PdfPCell clientCell = null;
                 if (isAllClient) {
@@ -141,15 +163,17 @@ public class PdfService {
             document.add(table);
             document.add(Chunk.NEWLINE);
 
-            // Final Summary (Right-Aligned)
-            Double finalBalance = (oldBalance - depositAmount) + totalSales;
+            // ===== Final Summary =====
+            Double finalBalance = oldBalance + totalSales;
 
             PdfPTable summaryTable = new PdfPTable(1);
             summaryTable.setWidthPercentage(50);
             summaryTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
             PdfPCell finalCell = new PdfPCell(new Phrase(
-                    LocalDate.now().format(formatter) + "   Final Balance = ₹" + finalBalance, redFont));
+                    to.format(formatter) + " Ka Final Amount = ₹" + finalBalance,
+                    greenFont // Entire text green
+            ));
             finalCell.setBorder(Rectangle.NO_BORDER);
             finalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             finalCell.setNoWrap(true);

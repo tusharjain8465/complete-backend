@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,15 +50,32 @@ public class PdfController {
             @RequestParam(required = false) Double oldBalance,
             @RequestParam(required = false, defaultValue = "0") Double depositAmount) throws IOException {
 
+        ZoneId INDIA_ZONE = ZoneId.of("Asia/Kolkata");
         boolean isAllClient = (clientId == null);
         String clientName;
         List<SaleEntry> sales = new ArrayList<>();
-        
 
+        // Convert provided dates to India time
+        if (from != null) {
+            from = ZonedDateTime.of(from, ZoneId.systemDefault())
+                    .withZoneSameInstant(INDIA_ZONE)
+                    .toLocalDateTime();
+        }
+        if (to != null) {
+            to = ZonedDateTime.of(to, ZoneId.systemDefault())
+                    .withZoneSameInstant(INDIA_ZONE)
+                    .toLocalDateTime();
+        }
+        if (depositDatetime != null) {
+            depositDatetime = ZonedDateTime.of(depositDatetime, ZoneId.systemDefault())
+                    .withZoneSameInstant(INDIA_ZONE)
+                    .toLocalDateTime();
+        }
+
+        // If no dates provided, use current India time
         if (to == null && from == null) {
-            from = LocalDateTime.now().minusDays(days);
-            to = LocalDateTime.now();
-
+            from = LocalDateTime.now(INDIA_ZONE).minusDays(days);
+            to = LocalDateTime.now(INDIA_ZONE);
         }
 
         LocalDate fromLocalDate = from.toLocalDate();
@@ -67,34 +86,26 @@ public class PdfController {
             clientName = client.getName();
 
             if (oldBalance == null) {
-
                 oldBalance = saleEntryRepository.getOldBalanceOfClient(clientId, fromLocalDate);
             }
 
-            if (from != null && to != null) {
-
-                sales = saleEntryRepository.findByClientIdAndSaleDateBetweenOrderBySaleDateTimeDescCustom(clientId,
-                        fromLocalDate, toLocalDate);
-            }
+            sales = saleEntryRepository.findByClientIdAndSaleDateBetweenOrderBySaleDateTimeDescCustom(
+                    clientId, fromLocalDate, toLocalDate);
 
         } else {
             clientName = "All_Clients";
 
             if (oldBalance == null) {
-
                 oldBalance = saleEntryRepository.getOldBalance(fromLocalDate);
             }
 
-            if (from != null && to != null) {
-
-                sales = saleEntryRepository.findBySaleDateBetweenOrderBySaleDateTimeDescCustom(fromLocalDate,
-                        toLocalDate);
-            }
-
+            sales = saleEntryRepository.findBySaleDateBetweenOrderBySaleDateTimeDescCustom(
+                    fromLocalDate, toLocalDate);
         }
 
         ByteArrayInputStream bis = pdfService.generateSalesPdf(
-                clientName, sales, fromLocalDate, toLocalDate, isAllClient, depositAmount, depositDatetime, oldBalance);
+                clientName, sales, fromLocalDate, toLocalDate, isAllClient,
+                depositAmount, depositDatetime, oldBalance);
 
         byte[] pdfBytes = bis.readAllBytes();
 

@@ -1,6 +1,7 @@
 package com.example.wholesalesalesbackend.model;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,7 +19,7 @@ public class OtpVerification {
     private String email;
     private String otp;
     private LocalDateTime expiryTime;
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
 
     private boolean verified;
 }

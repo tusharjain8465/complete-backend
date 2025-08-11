@@ -29,7 +29,6 @@ public interface SaleEntryRepository extends JpaRepository<SaleEntry, Long> {
 
        List<SaleEntry> findByClientAndSaleDateTimeBeforeOrderBySaleDateTimeDesc(Client client, LocalDateTime to);
 
-       
        // present
        List<SaleEntry> findBySaleDateTimeBetweenOrderBySaleDateTimeDesc(LocalDateTime from, LocalDateTime to);
 
@@ -53,13 +52,13 @@ public interface SaleEntryRepository extends JpaRepository<SaleEntry, Long> {
 
        @Query(value = "SELECT SUM(total_price) AS sale, SUM(profit) AS profit " +
                      "FROM sale_entry WHERE sale_date_time BETWEEN :from AND :to", nativeQuery = true)
-       ProfitAndSaleProjection getTotalPriceAndProfitBetweenDates(@Param("from") LocalDateTime from,
-                     @Param("to") LocalDateTime to);
+       ProfitAndSaleProjection getTotalPriceAndProfitBetweenDates(@Param("from") LocalDate from,
+                     @Param("to") LocalDate to);
 
        @Query(value = "SELECT SUM(total_price) AS sale, SUM(profit) AS profit " +
                      "FROM sale_entry WHERE client_id= :clientId and sale_date_time BETWEEN :from AND :to", nativeQuery = true)
-       ProfitAndSaleProjection getTotalPriceAndProfitBetweenDatesByClient(@Param("from") LocalDateTime from,
-                     @Param("to") LocalDateTime to,
+       ProfitAndSaleProjection getTotalPriceAndProfitBetweenDatesByClient(@Param("from") LocalDate from,
+                     @Param("to") LocalDate to,
                      @Param("clientId") Long clientId);
 
        @Modifying
@@ -95,5 +94,9 @@ public interface SaleEntryRepository extends JpaRepository<SaleEntry, Long> {
        @Query(value = "SELECT SUM(t.total_price) FROM sale_entry t WHERE t.client_id =:clientId AND DATE(t.sale_date_time) < :fromDate ", nativeQuery = true)
        Double getOldBalanceOfClient(@Param("clientId") Long clientId,
                      @Param("fromDate") LocalDate fromDate);
+
+       @Modifying
+       @Query(value = "DELETE FROM sale_entry WHERE client_id = :clientId", nativeQuery = true)
+       void deleteByClientId(@Param("clientId") Long clientId);
 
 }

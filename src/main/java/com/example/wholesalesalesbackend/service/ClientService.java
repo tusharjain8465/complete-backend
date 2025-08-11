@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import com.example.wholesalesalesbackend.dto.ClientCreateRequest;
 import com.example.wholesalesalesbackend.model.Client;
 import com.example.wholesalesalesbackend.repository.ClientRepository;
+import com.example.wholesalesalesbackend.repository.SaleEntryRepository;
 import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
+
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -15,6 +18,9 @@ public class ClientService {
 
     @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    SaleEntryRepository saleEntryRepository;
 
     public Client addClient(Client client) {
         if (clientRepository.existsByName(client.getName())) {
@@ -48,9 +54,12 @@ public class ClientService {
         return clientRepository.save(existing);
     }
 
+    @Transactional
     public String deleteClient(Long id) {
         Client existing = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client not found"));
+
+        saleEntryRepository.deleteByClientId(existing.getId());
         clientRepository.delete(existing);
         return "Deleted !!!";
     }

@@ -9,7 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,7 +35,7 @@ public class SaleEntryController {
     private SaleEntryService saleEntryService;
 
     @PostMapping("/sale-entry/add")
-    public ResponseEntity<String> addSaleEntry(@RequestBody @Valid SaleEntryRequestDTO requestDTO) {
+    public ResponseEntity<String> addSaleEntry(@RequestBody SaleEntryRequestDTO requestDTO) {
         SaleEntry savedEntry = saleEntryService.addSaleEntry(requestDTO);
         return ResponseEntity.ok("added");
     }

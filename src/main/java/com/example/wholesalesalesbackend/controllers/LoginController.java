@@ -2,6 +2,7 @@ package com.example.wholesalesalesbackend.controllers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Random;
 
@@ -116,8 +117,11 @@ public class LoginController {
             return ResponseEntity.status(404).body("OTP not found. Please request a new OTP.");
         }
 
-        // Check if OTP is expired (older than 10 minutes)
-        if (Duration.between(otp.get().getCreatedAt(), LocalDateTime.now()).toMinutes() > 10) {
+        ZoneId indiaZone = ZoneId.of("Asia/Kolkata");
+
+        if (Duration.between(
+                otp.get().getCreatedAt(),
+                LocalDateTime.now(indiaZone)).toMinutes() > 10) {
             return ResponseEntity.status(400).body("OTP expired. Please request a new one.");
         }
 
@@ -154,9 +158,6 @@ public class LoginController {
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         // Invalidate session
         request.getSession().invalidate();
-
-        // Clear SecurityContext
-        // SecurityContextHolder.clearContext();
 
         return ResponseEntity.ok("Logged out successfully");
     }
