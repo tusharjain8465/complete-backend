@@ -38,33 +38,25 @@ public class SaleEntryService {
         Client client = clientRepository.findById(dto.getClientId())
                 .orElseThrow(() -> new RuntimeException("Client not found"));
 
-        // Determine return flag
         boolean isReturn = Boolean.TRUE.equals(dto.getReturnFlag());
 
-        // Accessory name prefix
         String accessoryName = Optional.ofNullable(dto.getAccessoryName()).orElse("UNKNOWN");
-        accessoryName = isReturn
-                ? "RETURN -> " + accessoryName
-                : "ADD -> " + accessoryName;
+        accessoryName = isReturn ? "RETURN -> " + accessoryName : "ADD -> " + accessoryName;
 
-        // Normalize values
         Double totalPrice = Optional.ofNullable(dto.getTotalPrice()).orElse(0.0);
         Double profit = Optional.ofNullable(dto.getProfit()).orElse(0.0);
 
         if (isReturn) {
-            totalPrice = Math.abs(totalPrice) * -1;
-            profit = Math.abs(profit) * -1;
+            totalPrice = -Math.abs(totalPrice);
+            profit = -Math.abs(profit);
         } else {
             totalPrice = Math.abs(totalPrice);
             profit = Math.abs(profit);
         }
 
-        // Ensure date stored in IST
+        // Sale date in IST
         ZoneId indiaZone = ZoneId.of("Asia/Kolkata");
         LocalDateTime saleDateTime = Optional.ofNullable(dto.getSaleDateTime())
-                .map(dt -> dt.atZone(ZoneId.systemDefault())
-                        .withZoneSameInstant(indiaZone)
-                        .toLocalDateTime())
                 .orElse(LocalDateTime.now(indiaZone));
 
         SaleEntry saleEntry = SaleEntry.builder()
@@ -335,7 +327,8 @@ public class SaleEntryService {
 
         // If clientId is provided, use client-specific repository method
         if (clientId != null) {
-            result = saleEntryRepository.getTotalPriceAndProfitBetweenDatesByClient(from.toLocalDate(), to.toLocalDate(), clientId);
+            result = saleEntryRepository.getTotalPriceAndProfitBetweenDatesByClient(from.toLocalDate(),
+                    to.toLocalDate(), clientId);
         } else {
             result = saleEntryRepository.getTotalPriceAndProfitBetweenDates(from.toLocalDate(), to.toLocalDate());
         }
@@ -369,7 +362,8 @@ public class SaleEntryService {
 
         if (isDateRangeProvided && isClientProvided) {
             // Case 1: Both dates and client ID are provided
-            result = saleEntryRepository.getTotalPriceAndProfitBetweenDatesByClient(from.toLocalDate(), to.toLocalDate(), clientId);
+            result = saleEntryRepository.getTotalPriceAndProfitBetweenDatesByClient(from.toLocalDate(),
+                    to.toLocalDate(), clientId);
         } else if (isDateRangeProvided) {
             // Case 2: Only dates provided
             result = saleEntryRepository.getTotalPriceAndProfitBetweenDates(from.toLocalDate(), to.toLocalDate());

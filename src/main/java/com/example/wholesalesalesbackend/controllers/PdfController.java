@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -74,8 +75,9 @@ public class PdfController {
 
         // If no dates provided, use current India time
         if (to == null && from == null) {
-            from = LocalDateTime.now(INDIA_ZONE).minusDays(days);
-            to = LocalDateTime.now(INDIA_ZONE);
+            LocalDate today = LocalDate.now(INDIA_ZONE);
+            to = today.atTime(LocalTime.MAX); // today end of day
+            from = today.minusDays(days).atStartOfDay(); // days ago start of day
         }
 
         LocalDate fromLocalDate = from.toLocalDate();

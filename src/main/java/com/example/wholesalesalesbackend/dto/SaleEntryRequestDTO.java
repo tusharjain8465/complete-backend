@@ -3,24 +3,20 @@ package com.example.wholesalesalesbackend.dto;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@AllArgsConstructor
 public class SaleEntryRequestDTO {
     private String accessoryName;
     private Integer quantity;
     private Double totalPrice;
     private Double profit;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime saleDateTime;
 
     private Boolean returnFlag;

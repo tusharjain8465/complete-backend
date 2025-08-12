@@ -40,7 +40,7 @@ public class PdfService {
 
         if (oldBalance == null) {
             oldBalance = 0.0;
-        }   
+        }
         // Ensure India timezone
         ZoneId indiaZone = ZoneId.of("Asia/Kolkata");
         LocalDate indiaToday = LocalDate.now(indiaZone);
@@ -58,7 +58,6 @@ public class PdfService {
             Font fontBold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
             Font fontNormal = FontFactory.getFont(FontFactory.HELVETICA, 12);
             Font redFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.RED);
-            Font greenFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.GREEN);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
@@ -70,14 +69,15 @@ public class PdfService {
 
             // Report Info
             document.add(new Paragraph("Sales Report for → " + clientName, fontBold));
+
             document.add(new Paragraph("Pdf Generated date → " + indiaToday.format(formatter)));
             Font blueFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL, BaseColor.BLUE);
-
 
             if (from != null && to != null) {
                 String formattedFrom = from.format(formatter);
                 String formattedTo = to.format(formatter);
-                document.add(new Paragraph("Date from: " + formattedFrom + "  se  " + formattedTo + " tak ki report", blueFont));
+                document.add(new Paragraph("Date from: " + formattedFrom + "  se  " + formattedTo + " tak ki report",
+                        blueFont));
             }
             document.add(Chunk.NEWLINE);
 
@@ -172,7 +172,7 @@ public class PdfService {
 
             PdfPCell finalCell = new PdfPCell(new Phrase(
                     to.format(formatter) + " Ka Final Amount = ₹" + finalBalance,
-                    greenFont // Entire text green
+                    redFont // Entire text green
             ));
             finalCell.setBorder(Rectangle.NO_BORDER);
             finalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -180,6 +180,11 @@ public class PdfService {
             summaryTable.addCell(finalCell);
 
             document.add(summaryTable);
+
+            document.add(Chunk.NEWLINE);
+            document.add(Chunk.NEWLINE);
+            document.add(Chunk.NEWLINE);
+            document.add(Chunk.NEWLINE);
 
             // Footer
             Paragraph footer = new Paragraph("Thank You For Purchasing\nContact on Vishal Jain Mobile No → 9537886555",
