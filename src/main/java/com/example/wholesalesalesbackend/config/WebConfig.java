@@ -13,7 +13,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Allow all endpoints
-                        .allowedOrigins("https://front-end-123-vercel-azure.vercel.app") // Angular frontend origin
+                        .allowedOrigins("https://front-end-123-vercel.vercel.app") // Angular frontend origin
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
